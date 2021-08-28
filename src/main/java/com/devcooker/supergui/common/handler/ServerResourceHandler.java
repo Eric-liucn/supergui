@@ -1,14 +1,17 @@
 package com.devcooker.supergui.common.handler;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.devcooker.supergui.common.data.SuperScreen;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.loading.FMLPaths;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
 public class ServerResourceHandler {
@@ -23,14 +26,19 @@ public class ServerResourceHandler {
         DistExecutor.safeRunWhenOn(Dist.DEDICATED_SERVER, SetupDir::new);
     }
 
-    public Optional<SuperScreen> getGUI(final String key) throws IOException {
-        Optional<Path> optionalPath = Files.walk(guis).filter(p -> p.getFileName().toString().split("\\.")[0].equals(key)).findFirst();
+    public SuperScreen getScreen(final String key) throws IOException {
+        Optional<Path> optionalPath = Files.walk(guis).filter(p -> FilenameUtils.removeExtension(p.getFileName().toString()).equals(key)).findFirst();
         if (optionalPath.isPresent()){
             Path filePath = optionalPath.get();
-            SuperScreen screen = JSONObject.parseObject(new String(Files.readAllBytes(filePath)), SuperScreen.class);
-            return Optional.of(screen);
+            return JSONObject.parseObject(new String(Files.readAllBytes(filePath)), SuperScreen.class);
+        }else {
+            throw new NullPointerException("Can't find the gui json file");
         }
-        return Optional.empty();
+    }
+
+    public void saveScreenJson(SuperScreen screen) throws IOException {
+        Path filePath = guis.resolve(screen.name + ".json");
+        Files.write(filePath, JSONObject.toJSONBytes(screen, SerializerFeature.PrettyFormat), StandardOpenOption.CREATE);
     }
 
 

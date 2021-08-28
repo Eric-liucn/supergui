@@ -1,5 +1,6 @@
 package com.devcooker.supergui;
 
+import com.devcooker.supergui.common.data.SuperScreen;
 import com.devcooker.supergui.common.handler.ServerResourceHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -17,6 +18,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -62,8 +64,11 @@ public class Supergui {
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
-    public void onServerStarting(FMLServerStartingEvent event) {
+    public void onServerStarting(FMLServerStartingEvent event) throws IOException {
         new ServerResourceHandler();
+        ServerResourceHandler.instance.saveScreenJson(new SuperScreen("name", 1,1,1,1,"texture"));
+        SuperScreen screen = ServerResourceHandler.instance.getScreen("name");
+        System.out.println(screen.x + "!!!!!!!!!!!!!!!!");
     }
 
     // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
